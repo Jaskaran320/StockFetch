@@ -40,6 +40,8 @@ class DataAPIClient(ABC):
             pandas.DataFrame: DataFrame of stock data
         """
         pass
+
+
     
     #Todo: Add generic caching methods.
 
