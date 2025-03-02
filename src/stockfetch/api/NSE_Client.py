@@ -1,39 +1,85 @@
 # Client side wrapper for NSE API
 from stockfetch.core.data_api_client import DataAPIClient
 import httpx
-import sys
+import pandas as pd
 
 
 class NSE_Client(DataAPIClient):
     def __init__(self):
         super().__init__()
-        base_url = "https://www.nseindia.com/api"
-        headers = {
-            "User-Agent": "StockFetch/0.1",
-            "Accept": "application/json",
-            "accept-language": "en-US,en;q=0.9,en-IN;q=0.8,en-GB;q=0.7",
-            "cache-control": "no-cache",
+        # self.today = datetime.today()
+        print("➡️ NSE India client initialized")
+        self.base_api_url: str = "https://www.nseindia.com/api"
+        self.home_url: str = "https://www.nseindia.com/"
+        self.headers: dict = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+            "Accept-Language": "en-US,en;q=0.9,en-IN;q=0.8,en-GB;q=0.7",
+            "Connection": "keep-alive",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
         }
+        self.client = httpx.Client(
+            headers=self.headers, follow_redirects=True, timeout=30.0
+        )
+        self._init_session()
+
+    def _init_session(self):
+        try:
+            response = self.client.get(self.home_url)
+            if response.status_code == 200:
+                print("✅ Session initialized successfully")
+            else:
+                print(f"❌ Session initialization failed: {response.status_code}")
+        except Exception as e:
+            print(f"❌ Session initialization error: {e}")
+
+    def __del__(self):
+        self.client.close()
+        print("➡️ NSE India client deinitialized")
 
     def _sanitize_uri(self, uri):
         santized_uri = uri.replace(" ", "%20")
         return santized_uri
 
     def _build_request(self, endpoint: str, params: dict):
-        request_url = f"{self.base_url}/{endpoint}"
+        request_url = f"{self.base_api_url}/{endpoint}"
 
         if params:
             request_url = f"{request_url}?"
             for key, value in params.items():
-                request_url = f"{request_url}{key}={value}&"
+                request_url += f"{key}={value}"
 
         request_url = self._sanitize_uri(request_url)
+        return request_url
 
-    def _parse_response(self, response):
-        return super()._parse_response(response)
-    
-    def check_module_health(self):
-        print("Health check for NSE_Client")
-    
+    def get_market_holidays(self):
+        endpoint = "holiday-master"
+        params = {"type": "trading"}
+        endpoint_url = self._build_request(endpoint, params)
+        try:
+            response = self.client.get(endpoint_url)
+            if response.status_code == 200:
+                print("✅ Response Fetched")
+                return response.json()
+            else:
+                print(f"❌ Status code: {response.status_code}")
+        except Exception as e:
+            print(f"Error Occured:{e}")
 
-
+    def get_historical_ohlc_data(self, symbol, start_date, end_date):
+        endpoint = "historical/cm/equity"
+        params = {"symbol": symbol, "series": "EQ", "from": start_date, "to": end_date}
+        endpoint_url = self._build_request(endpoint, params)
+        try:
+            response = self.client.get(endpoint_url)
+            if response.status_code == 200:
+                print("✅ Response Fetched")
+                # response_dataframe = pd.DataFrame.from_dict(response.json())
+                return response_dataframe
+            else:
+                print(f"❌ Status code: {response.status_code}")
+        except Exception as e:
+            print(f"Error Occured:{e}")
+            
+        

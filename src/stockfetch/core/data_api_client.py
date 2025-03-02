@@ -7,6 +7,8 @@ class DataAPIClient(ABC):
     def __init__(self):
         print("Stock API Client initialized ✅")
         
+        
+        
     # API Provider management
     def _set_API_key(self,API_key:str):
         """_summary_
@@ -29,20 +31,30 @@ class DataAPIClient(ABC):
         """
         pass
 
+        pass
+    
     @abstractmethod
-    def _parse_response(self,response:str) -> pandas.DataFrame:
+    def get_market_holidays(self) -> dict: 
         """_summary_
-        Abstract method to parse response from stock API.
-        Args:
-            response (str): response from stock API
-
+        Abstract method to get market holidays.
         Returns:
-            pandas.DataFrame: DataFrame of stock data
+            dict: Market holidays
         """
         pass
 
+    @abstractmethod
+    def get_historical_ohlc_data(self, symbol:str, start_date:str, end_date:str) -> pandas.DataFrame:
+        """_summary_
+        Abstract method to get equity OHLC data.
+        Args:
+            symbol (str): Stock symbol
+            start_date (str): Start date for data
+            end_date (str): End date for data
 
-    
+        Returns:
+            pandas.DataFrame: OHLC data
+        """
+        pass
     #Todo: Add generic caching methods.
 
     
