@@ -4,18 +4,17 @@ version = "0.1.0"
 description = ""
 authors = [
     {name = "Aditya",email = "ahujaaditya00@gmail.com"}
+    {name = "Jaskaran",email = "jaskaransingh.official7@gmail.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "httpx (>=0.28.1,<0.29.0)",
     "pandas (>=2.2.3,<3.0.0)"
-
 ]
 
 [tool.poetry]
 packages = [{include = "stockfetch", from = "src"}]
-
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
