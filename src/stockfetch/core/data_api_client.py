@@ -14,14 +14,7 @@ import pandas
 class DataAPIClient(ABC):
     def __init__(self):
         print('✅ Stock API Client initialized')
-
-    # API Provider management
-    def _set_API_key(self, API_key: str):
-        """_summary_
-        Set API key (if any) for API.
-        Args:
-            API_key (str): _description_
-        """
+        self.data_directory_path = None
 
     # API Request handling
     @abstractmethod
@@ -47,7 +40,11 @@ class DataAPIClient(ABC):
 
     @abstractmethod
     def get_historical_ohlc_data(
-        self, symbol: str, start_date: str, end_date: str, data_folder_path: str,
+        self,
+        symbol: str,
+        start_date: str,
+        end_date: str,
+        data_directory_path: str,
     ) -> pandas.DataFrame:
         """_summary_
         Abstract method to get equity OHLC data.
@@ -67,7 +64,7 @@ class DataAPIClient(ABC):
         self,
         data: dict | pandas.DataFrame | list | str,
         file_name: str,
-        data_folder_path: str,
+        data_directory_path: str,
         compress: bool = False,
     ) -> None:
         """_summary_
@@ -75,15 +72,17 @@ class DataAPIClient(ABC):
         Args:
             data (dict | pandas.DataFrame | list): Data to dump
             file_name (str): File name
-            data_folder_path (str): Path to data folder
+            data_directory_path (str): Path to data directory
             compress (bool, optional): Compress data. Defaults to False.
         """
 
-        if os.path.exists(data_folder_path):
-            print('📁 Data folder exists')
+        if os.path.exists(data_directory_path):
+            print('📁 Data directory exists')
+        elif (self.data_directory_path is not None) and os.path.exists(self.data_directory_path):
+            data_directory_path = self.data_directory_path
         else:
-            print('📁 New Folder created')
-            os.mkdir(data_folder_path)
+            print('📁 New directory created')
+            os.mkdir(data_directory_path)
 
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d')
         data_file_name = f"{file_name}_{timestamp}"
@@ -95,16 +94,17 @@ class DataAPIClient(ABC):
                 data,
                 open(
                     os.path.join(
-                        data_folder_path,
+                        data_directory_path,
                         data_file_name + extension,
-                    ), 'wb',
+                    ),
+                    'wb',
                 ),
             )
         elif isinstance(data, pandas.DataFrame):
             extension = '.csv'
             data.to_csv(
                 os.path.join(
-                    data_folder_path,
+                    data_directory_path,
                     data_file_name + extension,
                 ),
             )
@@ -114,17 +114,33 @@ class DataAPIClient(ABC):
                 data,
                 open(
                     os.path.join(
-                        data_folder_path,
+                        data_directory_path,
                         data_file_name + extension,
-                    ), 'w',
+                    ),
+                    'w',
                 ),
             )
         else:
             extension = '.txt'
             with open(
                 os.path.join(
-                    data_folder_path,
+                    data_directory_path,
                     data_file_name + extension,
-                ), 'w+',
+                ),
+                'w+',
             ) as f:
                 f.write(data)
+
+    def set_data_directory_path(self, data_directory_path: str) -> None:
+        """_summary_
+        Set data directory path.
+        Args:
+            data_diretory_path (str): Path to data directory
+        """
+        if os.path.exists(data_directory_path):
+            self.data_directory_path = data_directory_path
+        else:
+            os.mkdir(data_directory_path)
+            self.data_directory_path = data_directory_path
+
+        print(f"📁 Data directory path set to {data_directory_path}")

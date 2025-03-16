@@ -9,7 +9,6 @@ from stockfetch.core.data_api_client import DataAPIClient
 class NSE_Client(DataAPIClient):
     def __init__(self):
         super().__init__()
-        # self.today = datetime.today()
         print('➡️ NSE India client initialized')
         self.base_api_url: str = 'https://www.nseindia.com/api'
         self.home_url: str = 'https://www.nseindia.com/'
@@ -45,9 +44,10 @@ class NSE_Client(DataAPIClient):
         self.client.close()
         print('➡️ NSE India client deinitialized')
 
-    def _sanitize_uri(self, uri):
-        santized_uri = uri.replace(' ', '%20')
-        return santized_uri
+    def _encode_uri(self, uri):
+        encoded_uri = uri.replace(' ', '%20')
+        encoded_uri = encoded_uri.replace('"', '%22')
+        return encoded_uri
 
     def _build_request(self, endpoint: str, params: dict):
         request_url = f"{self.base_api_url}/{endpoint}"
@@ -57,7 +57,7 @@ class NSE_Client(DataAPIClient):
             for key, value in params.items():
                 request_url = f"{request_url}{key}={value}&"
 
-        request_url = self._sanitize_uri(request_url)
+        request_url = self._encode_uri(request_url)
         return request_url
 
     def get_market_holidays(self):
@@ -79,7 +79,7 @@ class NSE_Client(DataAPIClient):
         symbol,
         start_date,
         end_date,
-        data_folder_path=None,
+        data_directory_path=None,
     ):
         endpoint = 'historical/cm/equity'
 
@@ -90,17 +90,16 @@ class NSE_Client(DataAPIClient):
             'to': end_date,
         }
         endpoint_url = self._build_request(endpoint, params)
-        print(endpoint_url)
         try:
             response = self.client.get(endpoint_url)
             if response.status_code == 200:
                 print('✅ Response Fetched')
                 response_dataframe = pd.DataFrame(response.json()['data'])
-                if data_folder_path:
+                if data_directory_path:
                     self._dump_data(
                         response_dataframe,
                         'test_dump',
-                        data_folder_path,
+                        data_directory_path,
                         compress=False,
                     )
                 return response_dataframe

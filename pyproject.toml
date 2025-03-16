@@ -3,7 +3,8 @@ name = "stockfetch"
 version = "0.1.0"
 description = ""
 authors = [
-    {name = "Aditya",email = "ahujaaditya00@gmail.com"}
+    {name = "Aditya Ahuja",email = "ahujaaditya00@gmail.com"},
+    {name = "Jaskaran Singh", email = "Jaskaransingh.official7@gmail.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.13"
@@ -22,7 +23,7 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
-line-length = 95
+line-length = 127
 extend-exclude = [
     "tests",
 ]
